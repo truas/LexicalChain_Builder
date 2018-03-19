@@ -50,6 +50,10 @@ if __name__ == '__main__':
     logging.root.setLevel(level=logging.INFO)
     logger.info("running %s" % ' '.join(sys.argv))
     
+    #Loads
+    trained_w2v_model = gensim.models.KeyedVectors.load_word2vec_format(mo_foname, binary=True) #If the model is not binary set binary=False
+
+    
 #===============================================================================
 #     #IF you want to use COMMAND LINE for folder path
 #     parser = argparse.ArgumentParser(description="BSD_Extractor - Transforms text into synsets")

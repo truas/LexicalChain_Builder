@@ -27,6 +27,8 @@ def process_token(files):
     return(tokens_list)
 #creates a list of tokens for each document. A token is composed by: word, synset, offset and pos
 
+
+
 def process_one_file(files, output_folder):
     big_document = open(output_folder+'/'+corpus_bsd, 'w+')    
     for file in files:
