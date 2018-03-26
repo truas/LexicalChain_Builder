@@ -5,14 +5,19 @@ Created on Mar 16, 2018
 '''
 class SemanticSynsetData(object):
     def __init__(self):
-        self.synset_reations = dict()
+        self.synset_relations = dict()
 
 class ChainData(object):
     def __init__(self):
-        self.chain_id = None
-        self.chain_token = [] #List of TokenData of the Chain
-        self.chain_position = None
-        self.chain_relations = SemanticSynsetData() #all the synsets in that chain
+        self.chain_id = idData()
+        self.prospective_tokens = [] #List of idData of the Chain
+        self.chain_relation_tokens = SemanticSynsetData() #all the synset-related in this chain
+
+class idData(object):
+    def __init__(self):
+        self.iword = None
+        self.ioffset=None
+        self.ipos=None
 
 class TokenData(object):
     def __init__(self, word, syn, offset, pos):
