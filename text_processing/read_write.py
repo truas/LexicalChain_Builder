@@ -11,8 +11,7 @@ import os
 from lexicon import token_data
 
 #input-folder:
-doc_list_name = 'BSID_doclist.txt'
-corpus_bsd = 'bsd_corpus'
+
 
 
 def process_token(files):
@@ -39,32 +38,15 @@ def doclist_multifolder(folder_name):
     return input_file_list
 #creates list of documents in many folders
 
-def process_one_file(files, output_folder):
-    big_document = open(output_folder+'/'+corpus_bsd, 'w+')    
-    for file in files:
-        print('Processing %s' %file)
-        with open(file, 'r', encoding='utf-8') as fin:
-            for line in fin:
-                block = line.split('\t')
-                #block[0]:word; block[1]:synset; block[2]:offset; block[3]:pos - this has \n at the end
-                big_document.write(block[0] +'#'+ block[2] +'#'+ block[3].strip('\n') + '\t')
-        big_document.write('\n')
-    big_document.close()   
-#creates one file with each line being a document in the files list
-
-def process_many_files(files, input_folder, output_folder):
-    names = os.listdir(input_folder)   
-    for index, file in enumerate(files):
-        big_document = open(output_folder+'/'+names[index], 'w+')
-        print('Processing %s' %file)
-        with open(file, 'r', encoding='utf-8') as fin:
-            for line in fin:
-                block = line.split('\t')
-                #block[0]:word; block[1]:synset; block[2]:offset; block[3]:pos - this has \n at the end
-                big_document.write(block[0] + '#' + block[2] +'#'+ block[3].strip('\n') + '\t')
-        big_document.write('\n')
-        big_document.close()   
-#creates one file per document parsed - clean features -> block[x]          
+def chain_ouput_file(chains, bsd_fname, bsd_folder):  
+    #print('Saving %s Document' %bsd_fname)
+    doc_chain = open(bsd_folder +'/'+ bsd_fname, 'w+')  
+    #currently using just Word \t SynsetID \t offset  \t pos
+    for chain in chains:
+        doc_chain.write(chain.iword + '\t' + chain.isyn + '\t' + chain.ioffset + '\t' + chain.ipos + '\n')
+    doc_chain.close()
+    #print('%s Document saved' %bsd_fname)  
+#save each document(word, synset, offset, pos)         
 
 
 #===============================================================================

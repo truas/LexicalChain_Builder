@@ -26,6 +26,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 #local imports
 from text_processing import read_write as rw
 from lexicon import token_data as td
+from lexicon import lc_management as lm
 
 #input/output files/folder - If you need to set input, output and model folders
 in_foname = 'C:/tmp_project/LexicalChain_Builder/input'
@@ -81,14 +82,15 @@ if __name__ == '__main__':
     
     #===========================================================================
     synset_docslist = rw.doclist_multifolder(in_foname) #creates list of documents to parse
-    synset_docsnames = os.listdir(in_foname)
-    
+    synset_docsnames = os.listdir(in_foname) #name of the document
     counter = 0 #just to control the output file name
     
     for synset_docitem in synset_docslist:
         doc_data = td.DocumentData()
         doc_data.tokens = rw.process_token(synset_docitem)
-         
+        doc_data.flex_chains = lm.build_FlexChain(doc_data.tokens, trained_w2v_model)
+        rw.chain_ouput_file(doc_data.flex_chains, synset_docsnames[counter], ou_foname)
+        counter+=1 
          
          
          
