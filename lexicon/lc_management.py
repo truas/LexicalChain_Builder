@@ -3,12 +3,6 @@ Created on Mar 19, 2018
 
 @author: Terry Ruas
 
-IMPORTANT:
--if embeddings models is loaded by: word2vec = gensim.models.KeyedVectors.load('*.model') its dimension size
-can be obtained by  word2vec.syn0.size/len(word2vec.syn0) <float> OR  word2vec.syn0[0].size <int> - using vector_size will result in 'None'
--if embeddings models is loaded by: word2vec = gensim.models.KeyedVectors.load_word2vec_format(<model>,binary True/False)
-its dimension can be obtained by word2vec.vector_size
-
 '''
 #imports
 import numpy
@@ -34,6 +28,9 @@ NYMS = ['hypernyms','instance_hypernyms' , 'hyponyms', 'instance_hyponyms',
 
 POS_W = {'n':1.0, 'v':1.0, 'r':1.0, 'a':1.0, 's':1.0}
 
+#===============================================================================
+# FlexChain Block - START
+#===============================================================================
 def build_FlexChain(data_tokens, vec_model):
     #initialize chain
     flex_chains = []
@@ -48,6 +45,7 @@ def build_FlexChain(data_tokens, vec_model):
         tmp_iddata = td.idData()
         #tmp chains building block
         tmp_iddata.iword = data_tokens[counter].word 
+        tmp_iddata.isyn = wn.synset_from_pos_and_offset(data_tokens[counter].pos, data_tokens[counter].offset)  # @UndefinedVariable
         tmp_iddata.ioffset = data_tokens[counter].offset        
         tmp_iddata.ipos = data_tokens[counter].pos
         tmp_ssr = build_synset_relations(tmp_iddata.ioffset, tmp_iddata.ipos)
@@ -71,57 +69,41 @@ def build_FlexChain(data_tokens, vec_model):
     return(flex_chains)
 #build flexible lexical chain
 
-
-def start_FlexChain(data_token):
-    chain_start = td.ChainData()
-    chain_iddata = td.idData()
-    #chain possible representative
-    chain_iddata.iword = data_token.word
-    chain_iddata.isyn = data_token.syn
-    chain_iddata.ioffset = data_token.offset
-    chain_iddata.ipos = data_token.pos
-    chain_start.prospective_tokens.append(chain_iddata)
-    #chains related synsets
-    chain_start.chain_relation_tokens = build_synset_relations(chain_iddata.ioffset, chain_iddata.ipos)
-    #chain id  setup
-    chain_start.chain_id.iword = data_token.word
-    chain_start.chain_id.isyn = data_token.syn
-    chain_start.chain_id.ioffset = data_token.offset
-    chain_start.chain_id.ipos = data_token.pos
-    return(chain_start)
-#initializes first element of a chain  and set this chains id with the first token (word#offset#pos)
-
 def represent_FlexChain(current_chain, vec_model):
     vecs = []
     weight_pos =[]
     
-    for item in current_chain.prospective_tokens:
-        try:
-            key = item.iword+'#'+item.ioffset+'#'+item.ipos
-            vec = vec_model.word_vec(key) #return the vector for the token in the model
-            vecs.append(vec) #make a list of all token-vector from the synset embedding
-            wei = POS_W[item.ipos]
-            weight_pos.append(wei)#create a weigth vector based on the pos_tag
-        except KeyError:#in case key is not on the mode build an empty array or weights and synset-dim
-            vecs.append([0.0])#np.full(vec_model.syn0[0].size, 0.0)
-            weight_pos.append(0.0)
-    
-    current_chain_avg = np.average(vecs, weights = weight_pos, axis=0) #weighted average of the current chain
-    chain_rep = closest_synset_rep(current_chain.prospective_tokens, current_chain_avg, vec_model) 
-    
+    if len(current_chain.prospective_tokens) is not 1:        
+        for item in current_chain.prospective_tokens:
+            try:
+                key = item.iword+'#'+str(item.ioffset)+'#'+item.ipos
+                vec = vec_model.word_vec(key) #return the vector for the token in the model
+                vecs.append(vec) #make a list of all token-vector from the synset embedding
+                wei = POS_W[item.ipos]
+                weight_pos.append(wei)#create a weigth vector based on the pos_tag
+            except KeyError:#in case key is not on the model, build an empty array for weights and synset-dim
+                vecs.append(np.full(vec_model.vector_size, 0.0)) #synset-dim (vecs) all have to be the same size so np.average can run
+                weight_pos.append(0.0)
+        
+        current_chain_avg = np.average(vecs, weights = weight_pos, axis=0) #weighted average of the current chain - weights are the values on POS_W
+        chain_rep = closest_synset_rep(current_chain.prospective_tokens, current_chain_avg, vec_model) 
+    else:
+        chain_rep = current_chain.chain_id #if there is one element in the chain, that's its ID
+        #this is already done when starting a new chain
+            
     return(chain_rep)
 
-def closest_synset_rep(possible_ids, chain_avg, vec_model):
+def closest_synset_rep(prospective_ids, chain_avg, vec_model):
     highest_sofar = -float('inf')
     choice = 0
     
-    for i, candidates in enumerate(possible_ids):
-        key = candidates.iword+'#'+candidates.ioffset+'#'+candidates.ipos
+    for i, candidates in enumerate(prospective_ids):
+        key = candidates.iword+'#'+str(candidates.ioffset)+'#'+candidates.ipos
         #in case key is not on the mode build an empty array
         try:
             v2 = vec_model.word_vec(key)
-        except KeyError:
-            v2 = np.full(vec_model.syn0[0].size, 0.0) 
+        except KeyError:#if one of the synsets are not in the model we set is as [0.0] so the cosine_sim returns 0.0 directly
+            v2 = [0.0] #np.full(vec_model.syn0[0].size, 0.0)  #np.full(vec_model.syn0[0].size, 0.0)
         
         tmp = cosine_similarity(chain_avg, v2)
         #keep the index of the element with the highest cos-sim with the average in the chain
@@ -129,8 +111,25 @@ def closest_synset_rep(possible_ids, chain_avg, vec_model):
             highest_sofar = tmp
             choice = i
             
-    return(possible_ids[choice])    
+    return(prospective_ids[choice]) #an idData will be returned to represent the current chain   
 #elects the idData(synset-key) with the highest cosine against the average of current chain prospective synsets            
+
+def start_FlexChain(data_token):
+    chain_start = td.ChainData()
+    chain_iddata = td.idData()
+    #chain possible representative
+    chain_iddata.iword = data_token.word
+    chain_iddata.isyn = wn.synset_from_pos_and_offset(data_token.pos, data_token.offset)  # @UndefinedVariable
+    chain_iddata.ioffset = data_token.offset
+    chain_iddata.ipos = data_token.pos
+    chain_start.prospective_tokens.append(chain_iddata)
+    #chains related synsets
+    chain_start.chain_relation_tokens = build_synset_relations(chain_iddata.ioffset, chain_iddata.ipos)
+    #chain id  setup
+    chain_start.chain_id = chain_iddata
+    
+    return(chain_start)
+#initializes first element of a chain  and set this chains id with the first token (word#offset#pos)
 
 def build_synset_relations(offset, pos):
     relation_synsets = dict()
@@ -140,7 +139,7 @@ def build_synset_relations(offset, pos):
     for nym in NYMS:
         try:
             tmp_items = getattr(synset, nym)()
-            if not tmp_items: continue #if that relation retrieves no synsets jsut skip the whole thing
+            if not tmp_items: continue #if that relation retrieves no synsets just skip the whole thing
             for item in tmp_items:
                 if item not in relation_synsets: #if this is a new synset include on the dictionary
                     relation_synsets[item] = 1
@@ -150,7 +149,11 @@ def build_synset_relations(offset, pos):
             continue        
                 
     return (relation_synsets)
-#produces a list of synsets from all the *_NYMS from that synset
+#produces a list of synsets from all the *_NYMS from that synset - produces SSR from a synset(offset,pos)
+
+#===============================================================================
+# FlexChain Block - END
+#===============================================================================
 
 def initialize_weights(dimensions):
     weight_constants = []
@@ -182,6 +185,7 @@ def cosine_similarity(v1, v2):
     return (cos_sim)
 #distance.cosine for v1 and v2 with precision of PRECISION_COS
 #spatial.distance.cosine(v1, v2) gives cosine between them; we want their similarity - so 1 - cos(theta)
+#it will return 0.0 for any empty vector received
 
 #================================
 def hypernyms_path(synset):
