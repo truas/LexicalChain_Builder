@@ -3,7 +3,7 @@
 - Another type of synset2vec can be used, but changes have to be made to retrieve key-vectors in the model
 - Transforms consecutive related synsets (semantic related synsets) into a LexicalChains by incorporating in the same chain synsets that share one or more of the following attributes/relationships defined in WordNet as:
 
-	NYMS = ['hypernyms','instance_hypernyms' , 'hyponyms', 'instance_hyponyms', 
+		NYMS = ['hypernyms','instance_hypernyms' , 'hyponyms', 'instance_hyponyms', 
         'member_holonyms', 'substance_holonyms', 'part_holonyms', 
         'member_meronyms', 'substance_meronyms', 'part_meronyms',
         'attributes','entailments','causes', 'also_sees', 'verb_groups', 'similar_tos'] + [evaluated synset]
@@ -20,6 +20,8 @@ Example:
 
 
 - Produces as many files as the input, also in the same format. However, each entry represents now a *LexicalChain*.
+- POS_W = {'n':1.0, 'v':1.0, 'r':1.0, 'a':1.0, 's':1.0} in *lc_management.py* represent the weight for each POS when deciding which is closer to the average in that chain. This can be adjusted according to the distribution os POS in the trained corpus. Current is 1.0 for all.
+ - 'a' and 's' should have the same value since both represent ADJECTIVES in WordNet
 
 COMMAND LINE
 =============
