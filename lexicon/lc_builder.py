@@ -28,7 +28,7 @@ pydir_name = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
 #local imports
-from text_processing import read_write as rw
+from lexicon import read_write as rw
 from lexicon import token_data as td
 from lexicon import lc_management as lm
 
@@ -37,7 +37,7 @@ from lexicon import lc_management as lm
 #ou_foname = 'C:/tmp_project/LexicalChain_Builder/output'
 #mo_foname = 'C:/tmp_datasets/Wikipedia_Dump/2018_01_20/models/300d-neg-5w-5mc-cbow/wikidump2080120-nbsd-300d-neg-5w-5mc-cbow.vector'
 #mo_foname = "C:/tmp_datasets/Wikipedia_Dump/word2vec_gensim_wiki/wiki.en.text.vector" #binary-false
-#DISTANCES_files_path = 'C:/tmp_datasets/Wordnet/dict_map' #in case index-cost is used
+
 
 tokenizer = nltk.tokenize.RegexpTokenizer(r'\w+')
 en_stop = get_stop_words('en')
