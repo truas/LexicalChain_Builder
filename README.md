@@ -35,5 +35,8 @@ COMMAND LINE
 
 UPDATES
 =======
+[2018-06-12]
+1. Deleted package for read-write. Everythin will be under lexicon package
+
 [2018-03-28]
 1. Flexible Lexical Chain Algorithm  (FLC) implemented and validated.
