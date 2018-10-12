@@ -21,11 +21,15 @@ PRECISION_COS = 7
 
 
 #definitions
+
+#synset node relationships in WordNet
 NYMS = ['hypernyms','instance_hypernyms' , 'hyponyms', 'instance_hyponyms', 
         'member_holonyms', 'substance_holonyms', 'part_holonyms', 
         'member_meronyms', 'substance_meronyms', 'part_meronyms',
-        'attributes','entailments','causes', 'also_sees', 'verb_groups', 'similar_tos']#synset node relationships
+        'attributes','entailments','causes', 'also_sees', 'verb_groups', 'similar_tos',
+        'topic_domains', 'region_domains', 'usage_domains']
 
+#Part od speech weights
 POS_W = {'n':1.0, 'v':1.0, 'r':1.0, 'a':1.0, 's':1.0}
 
 #===============================================================================
@@ -34,20 +38,18 @@ POS_W = {'n':1.0, 'v':1.0, 'r':1.0, 'a':1.0, 's':1.0}
 def build_FlexChain(data_tokens, vec_model):
     #initialize chain
     flex_chains = []
-    flex_chains.append(start_FlexChain(data_tokens[0]))
-    counter = 1
-    #the first element is already in the chain
-   
-    while counter < len(data_tokens):#if the doc has one element we return it directly
+    flex_chains.append(start_FlexChain(data_tokens[0])) #the first element is already in the chain    
+    
+    for counter, token in enumerate(data_tokens,1):#visit every token except the first   
         adopt = False
         #last element of the chain
         last = len(flex_chains)-1
         tmp_iddata = td.idData()
         #tmp chains building block
-        tmp_iddata.iword = data_tokens[counter].word 
-        tmp_iddata.isyn = wn.synset_from_pos_and_offset(data_tokens[counter].pos, data_tokens[counter].offset)  # @UndefinedVariable
-        tmp_iddata.ioffset = data_tokens[counter].offset        
-        tmp_iddata.ipos = data_tokens[counter].pos
+        tmp_iddata.iword = token.word 
+        tmp_iddata.isyn = wn.synset_from_pos_and_offset(token.pos, token.offset)  # @UndefinedVariable
+        tmp_iddata.ioffset = token.offset        
+        tmp_iddata.ipos = token.pos
         tmp_ssr = build_synset_relations(tmp_iddata.ioffset, tmp_iddata.ipos)
         
         #if there was a match between both SSR we will add this synset to the chain 
@@ -61,11 +63,9 @@ def build_FlexChain(data_tokens, vec_model):
             flex_chains[last].prospective_tokens.append(tmp_iddata)
         else:#calculate current chain representative and create a new one to start a new chain block
             flex_chains[last].chain_id = represent_FlexChain(flex_chains[last], vec_model)
-            new_chain =  start_FlexChain(data_tokens[counter])
+            new_chain =  start_FlexChain(token)
             flex_chains.append(new_chain) 
-        
-        
-        counter+=1
+
     return(flex_chains)
 #build flexible lexical chain
 
@@ -81,9 +81,9 @@ def represent_FlexChain(current_chain, vec_model):
                 vecs.append(vec) #make a list of all token-vector from the synset embedding
                 wei = POS_W[item.ipos]
                 weight_pos.append(wei)#create a weigth vector based on the pos_tag
-            except KeyError:#in case key is not on the model, build an empty array for weights and synset-dim
-                vecs.append(np.full(vec_model.vector_size, 0.0)) #synset-dim (vecs) all have to be the same size so np.average can run
-                weight_pos.append(0.0)
+            except KeyError:#in case key is not on the model, create array (model-size) with random uniform dist, from -1 to 1
+                vecs.append(np.random.uniform(low=-1.0, high=1.0, size = vec_model.vector_size))
+                weight_pos.append(random.choice(list(POS_W.values())))#get a random weight based on the POS weight values
         
         current_chain_avg = np.average(vecs, weights = weight_pos, axis=0) #weighted average of the current chain - weights are the values on POS_W
         chain_rep = closest_synset_rep(current_chain.prospective_tokens, current_chain_avg, vec_model) 
@@ -134,7 +134,7 @@ def start_FlexChain(data_token):
 def build_synset_relations(offset, pos):
     relation_synsets = dict()
     synset = wn.synset_from_pos_and_offset(pos, offset) # @UndefinedVariable
-    relation_synsets[synset] = 1 #the synset itsefl is part of the related ones
+    relation_synsets[synset] = 1 #the synset itself is part of the related ones
         
     for nym in NYMS:
         try:
@@ -150,6 +150,7 @@ def build_synset_relations(offset, pos):
                 
     return (relation_synsets)
 #produces a list of synsets from all the *_NYMS from that synset - produces SSR from a synset(offset,pos)
+
 
 #===============================================================================
 # FlexChain Block - END

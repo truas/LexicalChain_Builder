@@ -35,8 +35,15 @@ COMMAND LINE
 
 UPDATES
 =======
+[2018-10-11]
+1. If key-token does not exist on token-embeddings models, we generate a random uniform distribution [-1.0,1.0]. A random part-of-speech weight is also selected from the weight list
+	1a. This shouldn't happen since the model used here is based on the synset-corpus we use to build the chains
+2. General refactor for optimization
+3. on doc_multifolder : file_uri = file_uri.replace("\\","/") #if running on windows
+4. included new related synset methods ('topic_domains', 'region_domains', 'usage_domains')
+
 [2018-06-12]
-1. Deleted package for read-write. Everythin will be under lexicon package
+1. Deleted package for read-write. Everything will be under lexicon package
 
 [2018-03-28]
 1. Flexible Lexical Chain Algorithm  (FLC) implemented and validated.

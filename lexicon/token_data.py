@@ -11,7 +11,7 @@ class ChainData(object):
     def __init__(self):
         self.chain_id = idData()
         self.prospective_tokens = [] #List of idData of the Chain
-        self.chain_relation_tokens = SemanticSynsetData() #all the synset-related in this chain
+        self.chain_relation_tokens = SemanticSynsetData() #all the synset-related(SSR) in this chain
 
 #same structure as TokenData, but no hard-constructor, easier to differentiate an ID token
 class idData(object):
@@ -31,4 +31,4 @@ class TokenData(object):
 class DocumentData(object):
     def __init__(self):
         self.tokens = [] #list of TokenData of the document
-        self.flex_chains = [] #list of ChainData of the document
+        self.chains = [] #list of ChainData of the document
