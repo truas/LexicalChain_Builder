@@ -21,7 +21,7 @@ class idData(object):
         self.ioffset=None
         self.ipos=None
 
-class TokenData(object):
+class TokenData(object):#used to read information from -synset-file into object
     def __init__(self, word, syn, offset, pos):
         self.word=word
         self.syn=syn

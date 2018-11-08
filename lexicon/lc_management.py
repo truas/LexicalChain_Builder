@@ -17,7 +17,10 @@ from lexicon import token_data as td
 
 
 #Global - Definitions
-PRECISION_COS = 7
+PRECISION_COS = 7 #precision for cosine-distance/similairty
+CHUNK_SIZE = 5 #size of chain blocks in fixed lexical chains
+LOW_CAP = -0.5 #lower bound of normal distribution value
+HIGH_CAP = 0.5 #upper bound of normal distribution value
 
 
 #definitions
@@ -50,7 +53,7 @@ def build_FlexChain(data_tokens, vec_model):
         tmp_iddata.isyn = wn.synset_from_pos_and_offset(token.pos, token.offset)  # @UndefinedVariable
         tmp_iddata.ioffset = token.offset        
         tmp_iddata.ipos = token.pos
-        tmp_ssr = build_synset_relations(tmp_iddata.ioffset, tmp_iddata.ipos)
+        tmp_ssr = build_synset_relations(tmp_iddata.ioffset, tmp_iddata.ipos) # retrieve related synsets from synset in the text
         
         #if there was a match between both SSR we will add this synset to the chain 
         for key in set(tmp_ssr) & set(flex_chains[last].chain_relation_tokens):
@@ -70,19 +73,19 @@ def build_FlexChain(data_tokens, vec_model):
 #build flexible lexical chain
 
 def represent_FlexChain(current_chain, vec_model):
-    vecs = []
-    weight_pos =[]
+    vecs = [] #synset vectors
+    weight_pos =[] #weight of synset vetors based on POS
     
     if len(current_chain.prospective_tokens) is not 1:        
         for item in current_chain.prospective_tokens:
+            key = makeKey(item.iword,item.ioffset,item.ipos)
             try:
-                key = item.iword+'#'+str(item.ioffset)+'#'+item.ipos
                 vec = vec_model.word_vec(key) #return the vector for the token in the model
                 vecs.append(vec) #make a list of all token-vector from the synset embedding
                 wei = POS_W[item.ipos]
                 weight_pos.append(wei)#create a weigth vector based on the pos_tag
             except KeyError:#in case key is not on the model, create array (model-size) with random uniform dist, from -1 to 1
-                vecs.append(np.random.uniform(low=-1.0, high=1.0, size = vec_model.vector_size))
+                vecs.append(np.random.uniform(low=LOW_CAP, high=HIGH_CAP, size = vec_model.vector_size))
                 weight_pos.append(random.choice(list(POS_W.values())))#get a random weight based on the POS weight values
         
         current_chain_avg = np.average(vecs, weights = weight_pos, axis=0) #weighted average of the current chain - weights are the values on POS_W
@@ -98,14 +101,9 @@ def closest_synset_rep(prospective_ids, chain_avg, vec_model):
     choice = 0
     
     for i, candidates in enumerate(prospective_ids):
-        key = candidates.iword+'#'+str(candidates.ioffset)+'#'+candidates.ipos
-        #in case key is not on the mode build an empty array
-        try:
-            v2 = vec_model.word_vec(key)
-        except KeyError:#if one of the synsets are not in the model we set is as [0.0] so the cosine_sim returns 0.0 directly
-            v2 = [0.0] #np.full(vec_model.syn0[0].size, 0.0)  #np.full(vec_model.syn0[0].size, 0.0)
-        
-        tmp = cosine_similarity(chain_avg, v2)
+        key = makeKey(candidates.iword,candidates.ioffset,candidates.ipos)
+        cand = retrieveModelKey(key, vec_model) #vector for given key in a nmodel        
+        tmp = cosine_similarity(chain_avg, cand)
         #keep the index of the element with the highest cos-sim with the average in the chain
         if tmp >= highest_sofar:
             highest_sofar = tmp
@@ -136,7 +134,7 @@ def build_synset_relations(offset, pos):
     synset = wn.synset_from_pos_and_offset(pos, offset) # @UndefinedVariable
     relation_synsets[synset] = 1 #the synset itself is part of the related ones
         
-    for nym in NYMS:
+    for nym in NYMS:#for all synset-lexical-relations in wordnet
         try:
             tmp_items = getattr(synset, nym)()
             if not tmp_items: continue #if that relation retrieves no synsets just skip the whole thing
@@ -155,6 +153,48 @@ def build_synset_relations(offset, pos):
 #===============================================================================
 # FlexChain Block - END
 #===============================================================================
+
+#===============================================================================
+#  FixedChain Block - Start
+#===============================================================================
+def build_FixedChain(data_tokens, vec_model, chunk=CHUNK_SIZE):
+    fixed_chains = []#list of fixed chains
+    tmp_chains = []
+   
+    if(len(data_tokens) > chunk):
+        tmp_chains = chunker(data_tokens, chunk)
+    else:
+        tmp_chains = data_tokens
+        #use the entire list of documents
+    
+#build fixed lexical chains based on chunks
+#in case a document is smaller than chunk size use the entire document
+def represent_FixedChain(tmp_chains, vec_model):
+    print()
+    
+
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+#slices list accordingly to a given size
+#===============================================================================
+#  FixedChain Block - End
+#===============================================================================
+
+#===============================================================================
+# COMMON
+#===============================================================================
+def makeKey(word, offset, pos):
+    return(word+'#'+str(offset)+'#'+pos)
+#build a key composed by word#offset#POS (to be used in a embeddings model)
+
+def retrieveModelKey(key,vec_model):
+    try:
+        vec = vec_model.word_vec(key)
+    except KeyError:
+        vec = np.random.uniform(low=LOW_CAP, high=HIGH_CAP, size = vec_model.vector_size)
+    return(vec)
+#retrieves a vector of x-dimensions for a given key in the trained model
+#if key not found, returns a pseudo-random normal distribution between LOW_CAP and HIGH_CAP       
 
 def initialize_weights(dimensions):
     weight_constants = []

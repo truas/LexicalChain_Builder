@@ -44,12 +44,15 @@ def doclist_multifolder(folder_name):
 #creates list of documents in many folders
 
 def chain_ouput_file(chains, fname, outfolder): 
-    #print('Saving %s Document' %fname)
-    doc_chain = open(outfolder +'/'+ fname, 'w+')  
-    #currently using just Word \t SynsetID \t offset  \t pos
-    for chain in chains:
-        doc_chain.write(chain.chain_id.iword + '\t' + str(chain.chain_id.isyn) + '\t' + str(chain.chain_id.ioffset) + '\t' + chain.chain_id.ipos + '\n')
-    doc_chain.close()
+    
+    if(chains):#only produce files with chains
+        doc_chain = open(outfolder +'/'+ fname, 'w+')  
+        #currently using just Word \t SynsetID \t offset  \t pos
+        for chain in chains:
+            doc_chain.write(chain.chain_id.iword + '\t' + str(chain.chain_id.isyn) + '\t' + str(chain.chain_id.ioffset) + '\t' + chain.chain_id.ipos + '\n')
+        doc_chain.close()
+    else:
+        pass #in case there is no chain in this document
     #print('%s Document saved' %bsd_fname)  
 #save each document(word, synset, offset, pos)         
 

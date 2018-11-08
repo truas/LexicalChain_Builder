@@ -23,22 +23,16 @@ from stop_words import get_stop_words
 
 #python module absolute path
 pydir_name = os.path.dirname(os.path.abspath(__file__))
-
+ppydir_name = os.path.dirname(pydir_name)
 #python path definition
-sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
+sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
 #local imports
 from lexicon import read_write as rw
 from lexicon import token_data as td
 from lexicon import lc_management as lm
 
-#input/output files/folder - If you need to set input, output and model folders
-in_foname = 'C:/tmp_project/ChainBuilder/input'
-ou_foname = 'C:/tmp_project/ChainBuilder/output'
-mo_foname = 'C:/Users/terry/Documents/Datasets/Wikipedia_Dump/2018_01_20/300d-hs-05w-05mc-cbow.model'
-#mo_foname = "C:/tmp_datasets/Wikipedia_Dump/word2vec_gensim_wiki/wiki.en.text.vector" #binary-false
-
-
+#Extra models
 tokenizer = nltk.tokenize.RegexpTokenizer(r'\w+')
 en_stop = get_stop_words('en')
 nltk.download('wordnet') #just to guarantee wordnet from nltk is installed
@@ -70,11 +64,22 @@ if __name__ == '__main__':
 #     model_folder = args.mod
 # 
 #     #in/ou relative location - #input/output/model folders are under synset/module/
-#     in_foname = os.path.join(pydir_name, '../'+input_folder) 
-#     ou_foname = os.path.join(pydir_name, '../'+output_folder)
-#     mo_foname = os.path.join(pydir_name, '../'+model_folder)
+#     in_foname = os.path.join(ppydir_name, input_folder) 
+#     ou_foname = os.path.join(ppydir_name, output_folder)
+#     mo_foname = os.path.join(ppydir_name, model_folder)
 #     
 #===============================================================================
+    
+    #===========================================================================
+    # IDE - Path Definitions
+    #===========================================================================
+    #input/output files/folder - If you need to set input, output and model folders
+    in_foname = 'C:/tmp_project/ChainBuilder/input'
+    ou_foname = 'C:/tmp_project/ChainBuilder/output'
+    mo_foname = 'C:/Users/terry/Documents/Datasets/Wikipedia_Dump/2018_01_20/300d-hs-05w-05mc-cbow.model'
+    #mo_foname = "C:/tmp_datasets/Wikipedia_Dump/word2vec_gensim_wiki/wiki.en.text.vector" #binary-false
+
+    
     #Loads
     #trained_w2v_model = gensim.models.KeyedVectors.load_word2vec_format(mo_foname, binary=False) #If the model is not binary set binary=False
     trained_w2v_model = gensim.models.KeyedVectors.load(mo_foname) #model.load used with .model extension - this files has to be in the same folder as its .npy

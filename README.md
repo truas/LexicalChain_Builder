@@ -35,6 +35,12 @@ COMMAND LINE
 
 UPDATES
 =======
+[2018-11-08]
+1. Refactoring - work with document structure better
+2. Refactoring - generating key and model handling
+3. Refactoring - normal distribution between LOW-HIGH in case key does not exist in vector model
+4. Initialize FixedLexical Chains
+
 [2018-10-11]
 1. If key-token does not exist on token-embeddings models, we generate a random uniform distribution [-1.0,1.0]. A random part-of-speech weight is also selected from the weight list
 	1a. This shouldn't happen since the model used here is based on the synset-corpus we use to build the chains
