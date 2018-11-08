@@ -79,15 +79,11 @@ def represent_FlexChain(current_chain, vec_model):
     if len(current_chain.prospective_tokens) is not 1:        
         for item in current_chain.prospective_tokens:
             key = makeKey(item.iword,item.ioffset,item.ipos)
-            try:
-                vec = vec_model.word_vec(key) #return the vector for the token in the model
-                vecs.append(vec) #make a list of all token-vector from the synset embedding
-                wei = POS_W[item.ipos]
-                weight_pos.append(wei)#create a weigth vector based on the pos_tag
-            except KeyError:#in case key is not on the model, create array (model-size) with random uniform dist, from -1 to 1
-                vecs.append(np.random.uniform(low=LOW_CAP, high=HIGH_CAP, size = vec_model.vector_size))
-                weight_pos.append(random.choice(list(POS_W.values())))#get a random weight based on the POS weight values
-        
+            vec,flag = retrieveModelKey(key, vec_model)
+            wei = weightPOS(flag, item.ipos) #weight (pos) based on the existence of a vector
+            
+            vecs.append(vec)
+            weight_pos.append(wei) 
         current_chain_avg = np.average(vecs, weights = weight_pos, axis=0) #weighted average of the current chain - weights are the values on POS_W
         chain_rep = closest_synset_rep(current_chain.prospective_tokens, current_chain_avg, vec_model) 
     else:
@@ -102,7 +98,7 @@ def closest_synset_rep(prospective_ids, chain_avg, vec_model):
     
     for i, candidates in enumerate(prospective_ids):
         key = makeKey(candidates.iword,candidates.ioffset,candidates.ipos)
-        cand = retrieveModelKey(key, vec_model) #vector for given key in a nmodel        
+        cand,_ = retrieveModelKey(key, vec_model) #vector for given key in a nmodel  (flag not used here)       
         tmp = cosine_similarity(chain_avg, cand)
         #keep the index of the element with the highest cos-sim with the average in the chain
         if tmp >= highest_sofar:
@@ -190,12 +186,22 @@ def makeKey(word, offset, pos):
 def retrieveModelKey(key,vec_model):
     try:
         vec = vec_model.word_vec(key)
+        flag = True
     except KeyError:
         vec = np.random.uniform(low=LOW_CAP, high=HIGH_CAP, size = vec_model.vector_size)
-    return(vec)
-#retrieves a vector of x-dimensions for a given key in the trained model
-#if key not found, returns a pseudo-random normal distribution between LOW_CAP and HIGH_CAP       
+        flag = False
+    return vec,flag
+#retrieves a vector of x-dimensions for a given key in the trained model and TRUE
+#else, returns a pseudo-random normal distribution between (LOW_CAP,HIGH_CAP) and FALSE     
 
+def weightPOS(vec_found, ipos):
+    if(vec_found):
+        wei = POS_W[ipos]
+    else:
+        wei = random.choice(list(POS_W.values()))
+    return(wei)            
+#if a vector exists in the model, its POS weight is selected, else one random POS weight is selected
+    
 def initialize_weights(dimensions):
     weight_constants = []
     for key in POS_W:
