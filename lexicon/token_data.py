@@ -23,10 +23,10 @@ class idData(object):
 
 class TokenData(object):#used to read information from -synset-file into object
     def __init__(self, word, syn, offset, pos):
-        self.word=word
-        self.syn=syn
-        self.offset=offset
-        self.pos=pos
+        self.iword=word
+        self.isyn=syn
+        self.ioffset=offset
+        self.ipos=pos
         
 class DocumentData(object):
     def __init__(self):
