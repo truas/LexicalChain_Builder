@@ -49,26 +49,26 @@ if __name__ == '__main__':
     logging.root.setLevel(level=logging.INFO)
     logger.info("running %s" % ' '.join(sys.argv))
      
-    #IF you want to use COMMAND LINE for folder path
-#===============================================================================
-#     parser = argparse.ArgumentParser(description="BSD_Extractor - Transforms text into synsets")
-#     parser.add_argument('--input', type=str, action='store', dest='inf', metavar='<folder>', required=True, help='input folder to read document(s)')
-#     parser.add_argument('--output', type=str, action='store', dest='ouf', metavar='<folder>', required=True, help='output folder to write document(s)')
-#     parser.add_argument('--model', type=str, action='store', dest='mod', metavar='<folder>', required=True, help='trained word embeddings model')
-#     
-#     args = parser.parse_args()
-#      
-#     #COMMAND LINE  folder paths
-#     input_folder = args.inf
-#     output_folder = args.ouf
-#     model_folder = args.mod
-# 
-#     #in/ou relative location - #input/output/model folders are under synset/module/
-#     in_foname = os.path.join(ppydir_name, input_folder) 
-#     ou_foname = os.path.join(ppydir_name, output_folder)
-#     mo_foname = os.path.join(ppydir_name, model_folder)
-#     
-#===============================================================================
+ #==============================================================================
+ #    #IF you want to use COMMAND LINE for folder path
+ #    parser = argparse.ArgumentParser(description="BSD_Extractor - Transforms text into synsets")
+ #    parser.add_argument('--input', type=str, action='store', dest='inf', metavar='<folder>', required=True, help='input folder to read document(s)')
+ #    parser.add_argument('--output', type=str, action='store', dest='ouf', metavar='<folder>', required=True, help='output folder to write document(s)')
+ #    parser.add_argument('--model', type=str, action='store', dest='mod', metavar='<folder>', required=True, help='trained word embeddings model')
+ #     
+ #    args = parser.parse_args()
+ #      
+ #    #COMMAND LINE  folder paths
+ #    input_folder = args.inf
+ #    output_folder = args.ouf
+ #    model_folder = args.mod
+ # 
+ #     #in/ou relative location - #input/output/model folders are under synset/module/
+ #    in_foname = os.path.join(ppydir_name, input_folder) 
+ #    ou_foname = os.path.join(ppydir_name, output_folder)
+ #    mo_foname = os.path.join(ppydir_name, model_folder)
+ #==============================================================================
+     
     
     #===========================================================================
     # IDE - Path Definitions
@@ -93,9 +93,14 @@ if __name__ == '__main__':
         
         doc_data.tokens = rw.process_token(synset_docitem)
         print('Document %s - Tokens Processed: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
-                
-        doc_data.chains = lm.build_FlexChain(doc_data.tokens, trained_w2v_model)
-        print('Document %s - FlexChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
+         
+        #FLLC        
+        #doc_data.chains = lm.build_FlexChain(doc_data.tokens, trained_w2v_model)
+        #print('Document %s - FlexChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
+        
+        #FXLC
+        doc_data.chains = lm.build_FixedChain(doc_data.tokens, trained_w2v_model)
+        print('Document %s - FixedChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
         
         rw.chain_ouput_file(doc_data.chains, synset_docsnames[counter], ou_foname)
         print('Document %s - Saved: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))

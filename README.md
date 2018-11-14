@@ -35,6 +35,10 @@ COMMAND LINE
 
 UPDATES
 =======
+[2018-11-14]
+1. Flexible Lexical Chains - Prototype working
+2. Fixed Lexical Chains - Prototype working
+
 [2018-11-08]
 1. Refactoring - work with document structure better
 2. Refactoring - generating key and model handling

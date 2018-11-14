@@ -35,9 +35,12 @@ NYMS = ['hypernyms','instance_hypernyms' , 'hyponyms', 'instance_hyponyms',
 #Part od speech weights
 POS_W = {'n':1.0, 'v':1.0, 'r':1.0, 'a':1.0, 's':1.0}
 
+'''
 #===============================================================================
 # FlexChain Block - START
 #===============================================================================
+'''
+
 def build_FlexChain(data_tokens, vec_model):
     #initialize chain
     flex_chains = []
@@ -109,25 +112,28 @@ def build_synset_relations(offset, pos):
     return (relation_synsets)
 #produces a list of synsets from all the *_NYMS from that synset - produces SSR from a synset(ioffset,ipos)
 
-
+'''
 #===============================================================================
 # FlexChain Block - END
 #===============================================================================
-
+'''
+'''
 #===============================================================================
 #  FixedChain Block - Start
 #===============================================================================
+'''
 def build_FixedChain(data_tokens, vec_model, chunk=CHUNK_SIZE):
     fixed_chains = []#list of fixed chains
     tmp_chains = []
    
-    if(len(data_tokens) > chunk):
-        tmp_chains = chunker(data_tokens, chunk)
-    else:
-        tmp_chains = data_tokens
-        #use the entire list of documents
-        
-        
+    tmp_chains = chunker(data_tokens, chunk)#slice of the data-tokens in document-synset
+    chains_data = convertFixedChain(tmp_chains, vec_model) #returns a list of chainData - for FX we just care about the prospective_tokens
+    
+    #representing fixed chain
+    for chunk in chains_data:
+        fixed_chains.append(chunk)
+        fixed_chains[-1].chain_id = representProspectiveChain(chunk, vec_model)
+    return(fixed_chains)      
 #build fixed lexical chains based on chunks
 #in case a document is smaller than chunk size use the entire document
 
@@ -136,18 +142,31 @@ def convertFixedChain(tmp_chains, vec_model):
     for tmp_chain in tmp_chains:
         fx_chain = td.ChainData()
         fx_chain.prospective_tokens = tmp_chain
-        
-        
+        fx_chains.append(fx_chain)
+    return (fx_chains)
+#Transforms list of chunk-chains into a list of ChainData, with each chunk as a prospective_tokens
+#prospective tokens are the objects used to calculate the representative items in that chain
+
+
 def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-#slices list accordingly to a given size
+    if(len(seq) >= size):
+        return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+    else:
+        return [seq]
+#slices list accordingly to a given size, if list of data-tokens is smaller than chunk-size
+#make a list of all data-tokens ([[data-tokens]])
+
+'''
 #===============================================================================
 #  FixedChain Block - End
 #===============================================================================
+'''
 
+'''
 #===============================================================================
-# COMMON Chain Manipulation
+# CHAIN REPRESENTATION
 #===============================================================================
+'''
 def representProspectiveChain(current_chain, vec_model):
     vecs, weight_pos = calculateChainRepresentative(current_chain, vec_model) 
     current_chain_avg = np.average(vecs, weights = weight_pos, axis=0) #weighted average of the current chain - weights are the values on POS_W
@@ -163,12 +182,13 @@ def closest_synset_rep(prospective_ids, chain_avg, vec_model):
         cand,_ = retrieveModelKey(key, vec_model) #vector for given key in a nmodel  (flag not used here)       
         tmp = cosine_similarity(chain_avg, cand)
         #keep the index of the element with the highest cos-sim with the average in the chain
-        if tmp >= highest_sofar:
+        if tmp >= highest_sofar: #
             highest_sofar = tmp
             choice = i
             
     return(prospective_ids[choice]) #an idData will be returned to represent the current chain   
 #elects the idData(synset-key) with the highest cosine against the average of current chain prospective synsets            
+#if two values are the same? (high) - otpion: pick them randomly?
 
 def calculateChainRepresentative(current_chain, vec_model):
     vecs = [] #synset vectors
@@ -205,7 +225,10 @@ def weightPOS(vec_found, ipos):
         wei = random.choice(list(POS_W.values()))
     return(wei)            
 #if a vector exists in the model, its POS weight is selected, else one random POS weight is selected
-    
+
+#===========================================================================
+# NOT USED
+#===========================================================================
 def initialize_weights(dimensions):
     weight_constants = []
     for key in POS_W:

@@ -10,7 +10,7 @@ class SemanticSynsetData(object):
 class ChainData(object):
     def __init__(self):
         self.chain_id = idData()
-        self.prospective_tokens = [] #List of idData of the Chain
+        self.prospective_tokens = [] #List of idData or TokenDate of the Chain - same attributes
         self.chain_relation_tokens = SemanticSynsetData() #all the synset-related(SSR) in this chain
 
 #same structure as TokenData, but no hard-constructor, easier to differentiate an ID token
