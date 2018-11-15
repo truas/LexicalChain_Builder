@@ -11,7 +11,11 @@ import os
 from lexicon import token_data
 
 #input-folder:
-
+'''
+#===============================================================================
+# Populate Initial TokenData Object
+#===============================================================================
+'''
 
 def process_token(file):
     tokens_list = []
@@ -25,10 +29,16 @@ def process_token(file):
     return(tokens_list)
 #creates a list of tokens for each document. A token is composed by: word, synset, offset and pos
 
+'''
+#===============================================================================
+# FOLDER MANIPULATION
+#===============================================================================
+'''
+
 def fname_splitter(docslist):
     fnames = []
     for doc in docslist:
-        blocks = doc.split('/') #'/' Windows, '\' Linux
+        blocks = doc.split('/') #'/' Windows, '\' Linux -  maybe this not relevant after refactoring of os.path/root.etc
         fnames.append(blocks[len(blocks)-1])
     return(fnames)
 #getting the filenames from uri of whatever documents were processed in the input folder   
@@ -38,10 +48,16 @@ def doclist_multifolder(folder_name):
     for roots, dir, files in os.walk(folder_name):
         for file in files:
             file_uri = os.path.join(roots, file)
-            file_uri = file_uri.replace("\\","/") #if running on windows           
+            file_uri = file_uri.replace("\\","/") #if running on windows -  maybe this not relevant after refactoring of os.path/root.etc           
             if file_uri.endswith('txt'): input_file_list.append(file_uri)
     return input_file_list
 #creates list of documents in many folders
+
+'''
+#===============================================================================
+# WRITING - I/O
+#===============================================================================
+'''
 
 def chain_ouput_file(chains, fname, outfolder): 
     
@@ -54,8 +70,20 @@ def chain_ouput_file(chains, fname, outfolder):
     else:
         pass #in case there is no chain in this document
     #print('%s Document saved' %bsd_fname)  
-#save each document(word, synset, offset, pos)         
+#save each document(word, synset, offset, pos)
 
+'''
+#===============================================================================
+# COMMAND LINE VALIDATION
+#===============================================================================
+'''         
+def checkChainType(chain_type):
+    if(chain_type=='flex'):
+        return (True)
+    else:
+        return (False)
+# checks for chain type: Flex -> True, Fixed -> (false, size of chunk )  
+  
 
 #===============================================================================
 # ins = 'C:/tmp_project/LexicalChain_Builder'

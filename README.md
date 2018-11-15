@@ -10,7 +10,7 @@
 
 - [evaluated synset] is the synset-token being evaluated itself     
 - These chains grow as long there are semantic related synsets in common
-- In *text_processing.read_write.py* under *def fname_splitter(docslist)* If running in UNIX use *split('/')* if running in WINDOWS with 'hardcoded' path for input/output use *split('\\')*
+- In *read_write.py* under *def fname_splitter(docslist)* If running in UNIX use *split('/')* if running in WINDOWS with 'hardcoded' path for input/output use *split('\\')*
 - Takes directory with synsets in .txt files with the following format:
 
 	word \t synset \t offset \t token4 \n
@@ -25,9 +25,11 @@ Example:
 
 COMMAND LINE
 =============
-	python3 lc_builder.py  --input <input_folder> --ouput <output_folder> --model <model_file>
+	python3 lc_builder.py  --input <input_folder> --chain <chain_type> [--size <size>] --ouput <output_folder> --model <model_file>
 	
 - <input_folder> : Input folder with .txt files or folders with .txt
+- <chain_type> : 'flex' for Flexible Lexical Chains (FLLC); 'fixed' - for Fixed Lexical Chains (FXLC)
+- <size> : [OPTIONAL] - size of the chunk for fixed chains (Default = CHUNK_SIZE in lc_management.py)
 - <output_folder>: Ouput folder where LexicalChain representatives should be saved
 - <model_file>: Synset-Embbedding model used. This should be in .vector format, but it can be changed to binary. The important is that its embeddings should be trained using synsets in the following canonical format: *word#offset#pos* . These are the keys to look up the embeddings.
 - input/output/model folder must be in the same level as ../lc_builder.py (a level above the executed script)
@@ -35,9 +37,14 @@ COMMAND LINE
 
 UPDATES
 =======
+[2018-11-15]:
+1. Flex and Fixed LC implemented, IDE and command line - milestone
+2. Small refactoring to validate input/parameteres
+3. General refactoring in the code
+
 [2018-11-14]
-1. Flexible Lexical Chains - Prototype working
-2. Fixed Lexical Chains - Prototype working
+1. Flexible Lexical Chains (FLLC) - Prototype working
+2. Fixed Lexical Chains (FXLC) - Prototype working - milestone
 
 [2018-11-08]
 1. Refactoring - work with document structure better
@@ -47,7 +54,7 @@ UPDATES
 5. Making code for representing Fixed and Flex chains more common so they can share unit-simple functions. 
 
 [2018-10-11]
-1. If key-token does not exist on token-embeddings models, we generate a random uniform distribution [-1.0,1.0]. A random part-of-speech weight is also selected from the weight list
+1. If key-token does not exist on token-embeddings models, we generate a random uniform distribution [-5.0,5.0]. A random part-of-speech weight is also selected from the weight list
 	1a. This shouldn't happen since the model used here is based on the synset-corpus we use to build the chains
 2. General refactor for optimization
 3. on doc_multifolder : file_uri = file_uri.replace("\\","/") #if running on windows

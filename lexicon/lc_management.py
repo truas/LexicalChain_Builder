@@ -122,7 +122,8 @@ def build_synset_relations(offset, pos):
 #  FixedChain Block - Start
 #===============================================================================
 '''
-def build_FixedChain(data_tokens, vec_model, chunk=CHUNK_SIZE):
+def build_FixedChain(data_tokens, vec_model, chunk_size):
+    chunk = checkChainSize(chunk_size) #validates if a proper chunk-size was provided
     fixed_chains = []#list of fixed chains
     tmp_chains = []
    
@@ -135,7 +136,7 @@ def build_FixedChain(data_tokens, vec_model, chunk=CHUNK_SIZE):
         fixed_chains[-1].chain_id = representProspectiveChain(chunk, vec_model)
     return(fixed_chains)      
 #build fixed lexical chains based on chunks
-#in case a document is smaller than chunk size use the entire document
+
 
 def convertFixedChain(tmp_chains, vec_model):
     fx_chains = []
@@ -147,7 +148,6 @@ def convertFixedChain(tmp_chains, vec_model):
 #Transforms list of chunk-chains into a list of ChainData, with each chunk as a prospective_tokens
 #prospective tokens are the objects used to calculate the representative items in that chain
 
-
 def chunker(seq, size):
     if(len(seq) >= size):
         return (seq[pos:pos + size] for pos in range(0, len(seq), size))
@@ -155,6 +155,13 @@ def chunker(seq, size):
         return [seq]
 #slices list accordingly to a given size, if list of data-tokens is smaller than chunk-size
 #make a list of all data-tokens ([[data-tokens]])
+
+def checkChainSize(chain_size):
+    if(chain_size):
+        return (int(chain_size))
+    else:
+        return (CHUNK_SIZE)
+#validates chunk size 
 
 '''
 #===============================================================================
@@ -182,13 +189,14 @@ def closest_synset_rep(prospective_ids, chain_avg, vec_model):
         cand,_ = retrieveModelKey(key, vec_model) #vector for given key in a nmodel  (flag not used here)       
         tmp = cosine_similarity(chain_avg, cand)
         #keep the index of the element with the highest cos-sim with the average in the chain
-        if tmp >= highest_sofar: #
+        if tmp > highest_sofar: #
             highest_sofar = tmp
             choice = i
             
     return(prospective_ids[choice]) #an idData will be returned to represent the current chain   
 #elects the idData(synset-key) with the highest cosine against the average of current chain prospective synsets            
-#if two values are the same? (high) - otpion: pick them randomly?
+#We take the first element closest to the average in the prospective chain, even if
+#there are others with the same value (this is an extremely rare situation given the dim)
 
 def calculateChainRepresentative(current_chain, vec_model):
     vecs = [] #synset vectors
@@ -226,6 +234,20 @@ def weightPOS(vec_found, ipos):
     return(wei)            
 #if a vector exists in the model, its POS weight is selected, else one random POS weight is selected
 
+#===============================================================================
+# COMMON
+#===============================================================================
+def cosine_similarity(v1, v2):
+    if not numpy.any(v1) or not numpy.any(v2): return(0.0) #in case there is an empty vector we return 0.0
+    cos_sim = 1.0 - round(spatial.distance.cosine(v1, v2), PRECISION_COS)
+    #if math.isnan(cos_dist): cos_dist = 0.0  #just to avoid NaN on the code-output for the cosine-dist value -  some iword vectors might be 0.0 for all dimensions
+    return (cos_sim)
+#distance.cosine for v1 and v2 with precision of PRECISION_COS
+#spatial.distance.cosine(v1, v2) gives cosine between them; we want their similarity - so 1 - cos(theta)
+#it will return 0.0 for any empty vector received
+
+
+
 #===========================================================================
 # NOT USED
 #===========================================================================
@@ -252,14 +274,7 @@ def select_weight(pos_tag):
 #defines a index number based on POS_TAG: 0 ->  noun (n); 1-> verbs (v); 2->adverbs(r); 3->adjectives (a or s)
 
 
-def cosine_similarity(v1, v2):
-    if not numpy.any(v1) or not numpy.any(v2): return(0.0) #in case there is an empty vector we return 0.0
-    cos_sim = 1.0 - round(spatial.distance.cosine(v1, v2), PRECISION_COS)
-    #if math.isnan(cos_dist): cos_dist = 0.0  #just to avoid NaN on the code-output for the cosine-dist value -  some iword vectors might be 0.0 for all dimensions
-    return (cos_sim)
-#distance.cosine for v1 and v2 with precision of PRECISION_COS
-#spatial.distance.cosine(v1, v2) gives cosine between them; we want their similarity - so 1 - cos(theta)
-#it will return 0.0 for any empty vector received
+
 
 #================================
 def hypernyms_path(synset):
