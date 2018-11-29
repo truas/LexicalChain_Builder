@@ -44,10 +44,12 @@ POS_W = {'n':1.0, 'v':1.0, 'r':1.0, 'a':1.0, 's':1.0}
 '''
 
 def build_FlexChain(data_tokens, vec_model):
+    if not (data_tokens): return (False) # in case a empty document is provided we will skip it
+    
     #initialize chain
     flex_chains = []
     flex_chains.append(start_FlexChain(data_tokens[0])) #the first element is already in the chain    
-    
+
     for counter, token in enumerate(data_tokens,1):#visit every token except the first   
         adopt = False
         #last element of the chain
@@ -140,6 +142,8 @@ def relatedSynsetChainUpdate(current_related_synset, chain_related_synset):
 #===============================================================================
 '''
 def build_FixedChain(data_tokens, vec_model, chunk_size):
+    if not (data_tokens): return (False)# in case a empty document is provided we will skip it
+    
     chunk = checkChainSize(chunk_size) #validates if a proper chunk-size was provided
     fixed_chains = []#list of fixed chains
     tmp_chains = []
@@ -263,7 +267,12 @@ def cosine_similarity(v1, v2):
 #spatial.distance.cosine(v1, v2) gives cosine between them; we want their similarity - so 1 - cos(theta)
 #it will return 0.0 for any empty vector received
 
-
+def validateDocumentToken(doc_chain):
+    if(doc_chain):
+        return (True)
+    else:
+        return (False)  
+#return false in case document has no word-token-synset
 
 #===========================================================================
 # NOT USED
