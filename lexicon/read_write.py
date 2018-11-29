@@ -42,7 +42,7 @@ def process_token(file):
 def fname_splitter(docslist):
     fnames = []
     for doc in docslist:
-        blocks = doc.split('/') #'/' Windows, '\' Linux -  maybe this not relevant after refactoring of os.path/root.etc
+        blocks = doc.split('/') #'\\' Windows, '/' Linux -  maybe this not relevant after refactoring of os.path/root.etc
         fnames.append(blocks[len(blocks)-1])
     return(fnames)
 #getting the filenames from uri of whatever documents were processed in the input folder   
@@ -52,7 +52,7 @@ def doclist_multifolder(folder_name):
     for roots, dir, files in os.walk(folder_name):
         for file in files:
             file_uri = os.path.join(roots, file)
-            file_uri = file_uri.replace("\\","/") #if running on windows -  maybe this not relevant after refactoring of os.path/root.etc           
+            #file_uri = file_uri.replace("\\","/") #if running on windows -  maybe this not relevant after refactoring of os.path/root.etc           
             if file_uri.endswith('txt'): input_file_list.append(file_uri)
     return input_file_list
 #creates list of documents in many folders

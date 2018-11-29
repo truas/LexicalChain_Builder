@@ -101,21 +101,24 @@ if __name__ == '__main__':
     
     status_check = 0 #only print every 5000 documents saved
     for counter,synset_docitem in enumerate(synset_docslist):
-        doc_data = td.DocumentData()
-         
-        doc_data.tokens = rw.process_token(synset_docitem)
-        #print('Document %s - Tokens Processed: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
-         
-        if(ch_select):#FLLC
-            doc_data.chains = lm.build_FlexChain(doc_data.tokens, trained_w2v_model)
-            #print('Document %s - FlexChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
-        else:#FXLC
-            doc_data.chains = lm.build_FixedChain(doc_data.tokens, trained_w2v_model, ch_size)
-            #print('Document %s - FixedChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))    
-         
-        rw.chain_ouput_file(doc_data.chains, synset_docsnames[counter], ou_foname)
-        if (status_check%5000==0): print('Document %s - Saved: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time)))) 
-        status_check+=1  
+        try:
+            doc_data = td.DocumentData()
+             
+            doc_data.tokens = rw.process_token(synset_docitem)
+            #print('Document %s - Tokens Processed: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
+             
+            if(ch_select):#FLLC
+                doc_data.chains = lm.build_FlexChain(doc_data.tokens, trained_w2v_model)
+                #print('Document %s - FlexChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))
+            else:#FXLC
+                doc_data.chains = lm.build_FixedChain(doc_data.tokens, trained_w2v_model, ch_size)
+                #print('Document %s - FixedChain Built: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time))))    
+             
+            rw.chain_ouput_file(doc_data.chains, synset_docsnames[counter], ou_foname)
+            if (status_check%100==0): print('Document %s - Saved: %s'  %(synset_docsnames[counter],(timedelta(seconds= time.monotonic() - start_time)))) 
+            status_check+=1  
+        except IndexError:#simple try-catch to avoid documents with few words/null or documents which all items are not in our knowledge database - Skip those documents
+            continue
     print('finished...')
      
 
