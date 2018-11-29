@@ -10,6 +10,10 @@ import os
 #local imports
 from lexicon import token_data
 
+#definitions for chains
+FLEX = "flex"
+FIXED = "fixed"
+
 #input-folder:
 '''
 #===============================================================================
@@ -19,7 +23,7 @@ from lexicon import token_data
 
 def process_token(file):
     tokens_list = []
-    print('Processing %s' %file)
+    #print('Processing %s' %file)
     with open(file, 'r', encoding='utf-8') as fin:
         for line in fin:
             block = line.split('\t') #delimiter
@@ -78,10 +82,12 @@ def chain_ouput_file(chains, fname, outfolder):
 #===============================================================================
 '''         
 def checkChainType(chain_type):
-    if(chain_type=='flex'):
+    if(chain_type==FLEX):
         return (True)
-    else:
+    elif(chain_type==FIXED):
         return (False)
+    else:
+        print('Error: Invalid Chain type')
 # checks for chain type: Flex -> True, Fixed -> (false, size of chunk )  
   
 

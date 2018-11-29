@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 '''
 Created on Mar 19, 2018
 
@@ -6,6 +7,7 @@ Created on Mar 19, 2018
 '''
 #imports
 import numpy
+import sys
 import random
 import numpy as np
 from scipy import spatial
@@ -18,7 +20,7 @@ from lexicon import token_data as td
 
 #Global - Definitions
 PRECISION_COS = 7 #precision for cosine-distance/similairty
-CHUNK_SIZE = 5 #size of chain blocks in fixed lexical chains
+CHUNK_SIZE = 4 #size of chain blocks in fixed lexical chains
 LOW_CAP = -0.5 #lower bound of normal distribution value
 HIGH_CAP = 0.5 #upper bound of normal distribution value
 
@@ -65,7 +67,9 @@ def build_FlexChain(data_tokens, vec_model):
                 break 
         
         if adopt:#incorporate synset into current chain
-            flex_chains[last].chain_relation_tokens = {**tmp_ssr, **flex_chains[last].chain_relation_tokens} #merge SSR between chain and synset
+            
+            flex_chains[last].chain_relation_tokens = relatedSynsetChainUpdate(tmp_ssr,flex_chains[last].chain_relation_tokens)
+            
             flex_chains[last].prospective_tokens.append(tmp_iddata)
         else:#calculate current chain representative and create a new one to start a new chain block
             flex_chains[last].chain_id = representProspectiveChain(flex_chains[last], vec_model)
@@ -111,6 +115,19 @@ def build_synset_relations(offset, pos):
                 
     return (relation_synsets)
 #produces a list of synsets from all the *_NYMS from that synset - produces SSR from a synset(ioffset,ipos)
+
+def relatedSynsetChainUpdate(current_related_synset, chain_related_synset):
+    #Python >= 3.5 Compatible
+    #MINOR_python_version = 5
+    #update_related_synsets = {**current_related_synset, **chain_related_synset}
+  
+    #Python <= 3.4 Compatible
+    update_related_synsets = current_related_synset.copy()
+    update_related_synsets.update(chain_related_synset)
+    
+    return(update_related_synsets)      
+#Merge dictionaries of related synsets. In python 3.5+ {**dict, **dict}, 
+#in python 3.4 or less need to use dict.copy and dict.update    
 
 '''
 #===============================================================================
@@ -158,7 +175,7 @@ def chunker(seq, size):
 
 def checkChainSize(chain_size):
     if(chain_size):
-        return (int(chain_size))
+        return (chain_size)
     else:
         return (CHUNK_SIZE)
 #validates chunk size 

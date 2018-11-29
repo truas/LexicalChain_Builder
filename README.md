@@ -25,7 +25,7 @@ Example:
 
 COMMAND LINE
 =============
-	python3 lc_builder.py  --input <input_folder> --chain <chain_type> [--size <size>] --ouput <output_folder> --model <model_file>
+	python3 lc_builder.py  --input <input_folder> --chain <chain_type> [--size <size>] --output <output_folder> --model <model_file>
 	
 - <input_folder> : Input folder with .txt files or folders with .txt
 - <chain_type> : 'flex' for Flexible Lexical Chains (FLLC); 'fixed' - for Fixed Lexical Chains (FXLC)
@@ -37,6 +37,10 @@ COMMAND LINE
 
 UPDATES
 =======
+[2018-11-29]:
+1. General refactorin on printing status (reduce I/O)
+2. Differences between python 3.4<= and 3.5>= with respect to merge dictionaries 
+
 [2018-11-15]:
 1. Flex and Fixed LC implemented, IDE and command line - milestone
 2. Small refactoring to validate input/parameteres
