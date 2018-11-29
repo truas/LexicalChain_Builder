@@ -40,7 +40,7 @@ UPDATES
 [2018-11-29]:
 1. General refactorin on printing status (reduce I/O)
 2. Differences between python 3.4<= and 3.5>= with respect to merge dictionaries 
-3. Discard documents that cannot be parsed into chains
+3. Discard documents that cannot be parsed into chains and/or are empty
 
 [2018-11-15]:
 1. Flex and Fixed LC implemented, IDE and command line - milestone
