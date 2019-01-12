@@ -23,8 +23,8 @@ FIXED = "fixed"
 
 def process_token(file):
     tokens_list = []
-    #print('Processing %s' %file)
-    with open(file, 'r', encoding='utf-8') as fin:
+    #print('Processing %s' %file) #in case bad chars are here error = 'ignore'
+    with open(file, 'r', encoding='utf-8', errors='ignore') as fin:
         for line in fin:
             block = line.split('\t') #delimiter
             #block[0] - word; block[1]-synset; block[2]-offset; block[3]-pos

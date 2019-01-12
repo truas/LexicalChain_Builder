@@ -37,6 +37,9 @@ COMMAND LINE
 
 UPDATES
 =======
+[2019-01-12]
+1. Bug correction - reading non ASCII chars handled
+
 [2018-11-29]:
 1. General refactorin on printing status (reduce I/O)
 2. Differences between python 3.4<= and 3.5>= with respect to merge dictionaries 
