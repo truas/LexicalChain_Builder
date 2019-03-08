@@ -37,6 +37,9 @@ COMMAND LINE
 
 UPDATES
 =======
+[2019-03-07]
+1. Moving project from personal repository
+
 [2019-01-12]
 1. Bug correction - reading non ASCII chars handled
 
