@@ -34,9 +34,16 @@ COMMAND LINE
 - <model_file>: Synset-Embbedding model used. This should be in .vector format, but it can be changed to binary. The important is that its embeddings should be trained using synsets in the following canonical format: *word#offset#pos* . These are the keys to look up the embeddings.
 - input/output/model folder must be in the same level as ../lc_builder.py (a level above the executed script)
 
+Models and Corpora:
+==============
+All datasets, training corpora and generated models for the paper "_Enhanced word embeddings using multi-semantic representation through lexical chains_" 
+can be found at [DeepBlue repository](https://deepblue.lib.umich.edu/data/concern/data_sets/w9505046h?locale=en)
 
 UPDATES
 =======
+[2019-05-15]
+1. Public domain for datasets/vectors/models generated.
+
 [2019-03-07]
 1. Moving project from personal repository
 
